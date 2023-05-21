@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>MediaRecorder</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+</head>
+<body>
+    <script>
+        const startBtn = document.getElementById('start-btn');
+const stopBtn = document.getElementById('stop-btn');
+const videoElement = document.getElementById('video');
+
+let mediaRecorder;
+let recordedChunks = [];
+
+navigator.mediaDevices.getDisplayMedia()
+startBtn.addEventListener('click', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.addEventListener('dataavailable', (event) => {
+      if (event.data.size > 1) {
+        recordedChunks.push(event.data);
+      }
+    });
+
+    mediaRecorder.addEventListener('stop', () => {
+      const recordedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+      videoElement.src = URL.createObjectURL(recordedBlob);
+    });
+
+    mediaRecorder.start();
+  } catch (error) {
+    console.error('Error starting recording:', error);
+  }
+});
+
+// Stop recording
+stopBtn.addEventListener('click', () => {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+});
+    </script>
+</body>
+</html>
